@@ -125,7 +125,7 @@ async fn show_token_form() -> Html<String> {
         <h1>Enter Token</h1>
         <form method="post">
             <input name="token" type="tel" inputmode="numeric" pattern="\d{1,8}" maxlength="8" required placeholder="8-digit token">
-            <button type="submit" class="form-btn">Submit</button>
+            <button type="submit" class="form-btn">Continue</button>
         </form>
         "#,
         NavButton::None,
@@ -180,7 +180,7 @@ async fn check_token(
         <form method="post" action="/id">
             <input name="student_id" type="tel" inputmode="numeric" pattern="\d{{1,20}}" maxlength="20" required placeholder="Student ID">
             <input type="hidden" name="token" value="{}">
-            <button type="submit" class="form-btn">Submit</button>
+            <button type="submit" class="form-btn">Continue</button>
         </form>
         "#,
             form.token
