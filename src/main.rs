@@ -147,11 +147,15 @@ async fn check_token(
 
     let ip = addr.ip().to_string();
     let mut rate_limit = state.rate_limit.lock().unwrap();
+    let seconds_limit = 3;
     if let Some(last) = rate_limit.get(&ip)
-        && last.elapsed() < Duration::from_secs(10)
+        && last.elapsed() < Duration::from_secs(seconds_limit)
     {
         return Html(page_wrapper(
-            "<h2>Rate limit: wait 10 seconds before retrying.</h2>",
+            &format!(
+                "<h2>Rate limit: wait {} seconds before retrying.</h2>",
+                seconds_limit
+            ),
             NavButton::GoBack,
         ));
     }
@@ -176,13 +180,27 @@ async fn check_token(
     Html(page_wrapper(
         &format!(
             r#"
-        <h1>Enter Student ID</h1>
-        <form method="post" action="/id">
-            <input name="student_id" type="tel" inputmode="numeric" pattern="\d{{1,20}}" maxlength="20" required placeholder="Student ID">
-            <input type="hidden" name="token" value="{}">
-            <button type="submit" class="form-btn">Continue</button>
-        </form>
-        "#,
+    <h1>Enter Student ID</h1>
+    <form method="post" action="/id" id="id-form">
+        <input name="student_id" id="student-id-input" type="tel" inputmode="numeric" pattern="\d{{1,20}}" maxlength="20" required placeholder="Student ID">
+        <input type="hidden" name="token" value="{}">
+        <button type="submit" class="form-btn">Continue</button>
+    </form>
+    <script>
+        // Restore last entered student ID
+        document.addEventListener('DOMContentLoaded', function() {{
+            var lastId = localStorage.getItem('student_id');
+            if (lastId) {{
+                document.getElementById('student-id-input').value = lastId;
+            }}
+        }});
+        // Save student ID on submit
+        document.getElementById('id-form').addEventListener('submit', function(e) {{
+            var idVal = document.getElementById('student-id-input').value;
+            localStorage.setItem('student_id', idVal);
+        }});
+    </script>
+    "#,
             form.token
         ),
         NavButton::GoBack,
@@ -270,7 +288,8 @@ async fn confirm_id(State(state): State<AppState>, Form(form): Form<ConfirmForm>
         .create(true)
         .open(&state.records_file)
         .unwrap();
-    writeln!(f, "{},{}", form.token, form.student_id).unwrap();
+    let now = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+    writeln!(f, "{},{},{}", form.token, form.student_id, now).unwrap();
 
     Html(page_wrapper(
         "<h2>Sign-in successful!</h2>",
