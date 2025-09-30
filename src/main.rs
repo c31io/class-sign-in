@@ -19,7 +19,7 @@ use std::{
 
 #[derive(Parser)]
 struct Args {
-    #[clap(long, default_value = "50")]
+    #[clap(long, default_value = "40")]
     tokens: usize,
     #[clap(long, default_value = "8888")]
     port: u16,
